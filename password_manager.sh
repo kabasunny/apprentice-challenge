@@ -1,5 +1,23 @@
 #!/bin/bash
 
+#暗号ファイル有の場合、復号する処理
+function d_file() {
+
+    	if [ -f 'pswlog.txt.gpg' ];
+	then
+		# 暗号化ファイルが存在する場合、復号
+		gpg --output 'pswlog.txt' --decrypt 'pswlog.txt.gpg'
+		
+	fi
+}
+
+#暗号化する処理
+function e_file() {
+	# 暗号化ファイルが存在する場合、復号
+	gpg -c 'pswlog.txt'
+}
+
+# メインの処理はここから
 echo 'パスワードマネージャへようこそ！'
 
 while true
@@ -11,7 +29,11 @@ do
        then
 	       echo '1:Add Passwordを選択しました。'
 	       read -p 'サービス名を入力し、enterキーを押してください:' service
-	       if grep -q "^$service:" pswlog.txt 2>/dev/null; # 初回のエラーを非表示
+	       
+	       d_file
+	       
+	       if grep -q "^$service:" pswlog.txt 2>/dev/null;
+	       # 重複登録を拒否する処理。初回のエラーを非表示
 	       then
 		       echo "入力されたサービス: $service は登録済みです。"
 		       echo 'パスワードを取得するには 2 を選択してください。'
@@ -26,8 +48,11 @@ do
        elif [ "$input" = '2' -o "$input" = '２' ];
        then
 	       echo '2:Get Passwordを選択しました。'
+	       
+	       d_file
+	       
 	       read -p 'サービス名を入力し、enterキーを押してください:' service_2
-	       if grep -q "^$service_2:" pswlog.txt; # -qで、標準出力を抑制
+	       if grep -q "^$service_2:" pswlog.txt 2>/dev/null; # -qで、標準出力を抑制し、初回のエラーを非表示
 	       # if grep "^$service_2:" pswlog.txt > /dev/null; # > /dev/nullで、標準出力を抑制
 	       # if a=$(grep "^$service_2:" pswlog.txt); # a=()で、標準出力を抑制
 	         # 上記のif command文は、条件の判定ではなく、シェルコマンドの終了ステータスによる
