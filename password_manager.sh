@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 暗号化と復号時のバッチ処理に必要なパスフレーズ
 pass='apprentice-challenge'
 
 #暗号ファイル有の場合、復号する処理
@@ -47,11 +48,11 @@ do
 	       # 重複登録を拒否する処理。初回のエラーを非表示
 	       then
 		       echo "入力されたサービス: $service は登録済みです。"
-		       echo 'パスワードを取得するには 2 を選択してください。'
+		       echo -e "パスワードを取得するには 2 を選択してください。\n"
 		       continue
 	       fi
 	       read -p 'ユーザー名を入力し、enterキーを押してください:' user
-	       read -p 'パスワード名を入力し、enterキーを押してください:' password
+	       read -p 'パスワードを入力し、enterキーを押してください:' password
 	       echo "$service:$user:$password" >> pswlog.txt
 	       echo 'パスワードの追加は成功しました。'
 	       # 変数展開、コマンド置換や特殊文字を解釈させたい場合は、ダブルクォートを使用
@@ -100,11 +101,22 @@ do
        then
 	       echo '3:Exitを選択しました。'
 	       break
+       
+       # 管理者用の処理として、現在のリスト一覧を表示
+       elif [ "$input" = 'admin' ];
+       then
+	       echo '現在のリスト一覧 (管理者用の処理)'
+	       d_file
+	       echo 'サービス名:ユーザー名:パスワード'
+	       cat pswlog.txt
+	       rm pswlog.txt
+	       break
        else
 	       echo '入力が間違えています。1 / 2 / 3 から選択してください。'
        fi
+       echo ""
 
 done
 
-echo "Thank you!";
+echo -e "Thank you!\n";
 
