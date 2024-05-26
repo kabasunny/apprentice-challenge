@@ -7,8 +7,11 @@ function d_file() {
 	if [ -f 'pswlog.txt.gpg' ];
 	then
 		# 復号
-		echo $pass | gpg --batch --yes --passphrase-fd 0\
-			--output 'pswlog.txt' --decrypt 'pswlog.txt.gpg'
+		echo $pass | gpg --quiet --batch --yes --passphrase-fd 0\
+			--output 'pswlog.txt' --decrypt 'pswlog.txt.gpg'\
+			# gpg: AES256 encrypted data が表示されていた
+                          # > /dev/null 2>&1では消えない 標準入出力ではない様だ
+                          #  --quiet　で抑制できる
 		  # --batch : 対話的なプロンプト表示を抑制する
 		  # --yes : ユーザーの介入なしにyesを実行
 		  # --passhrase-fd 0 : 標準入力(echo $pass |)から読み取る
@@ -18,8 +21,9 @@ function d_file() {
 #暗号化する処理
 function e_file() {
 	# 暗号化
-	echo $pass | gpg --batch --yes --passphrase-fd 0 \
-	       -c 'pswlog.txt'
+	echo $pass | gpg --quiet --batch --yes --passphrase-fd 0 \
+		       -c 'pswlog.txt' 
+			       # gpg: encrypted with 1 passphrase が表示されていた
 	rm 'pswlog.txt'
 }
 
