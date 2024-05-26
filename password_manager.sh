@@ -1,20 +1,26 @@
 #!/bin/bash
 
+pass='apprentice-challenge'
+
 #暗号ファイル有の場合、復号する処理
 function d_file() {
-
-    	if [ -f 'pswlog.txt.gpg' ];
+	if [ -f 'pswlog.txt.gpg' ];
 	then
-		# 暗号化ファイルが存在する場合、復号
-		gpg --output 'pswlog.txt' --decrypt 'pswlog.txt.gpg'
-		
+		# 復号
+		echo $pass | gpg --batch --yes --passphrase-fd 0\
+			--output 'pswlog.txt' --decrypt 'pswlog.txt.gpg'
+		  # --batch : 対話的なプロンプト表示を抑制する
+		  # --yes : ユーザーの介入なしにyesを実行
+		  # --passhrase-fd 0 : 標準入力(echo $pass |)から読み取る
 	fi
 }
 
 #暗号化する処理
 function e_file() {
-	# 暗号化ファイルが存在する場合、復号
-	gpg -c 'pswlog.txt'
+	# 暗号化
+	echo $pass | gpg --batch --yes --passphrase-fd 0 \
+	       -c 'pswlog.txt'
+	rm 'pswlog.txt'
 }
 
 # メインの処理はここから
@@ -30,6 +36,7 @@ do
 	       echo '1:Add Passwordを選択しました。'
 	       read -p 'サービス名を入力し、enterキーを押してください:' service
 	       
+	       # 復号
 	       d_file
 	       
 	       if grep -q "^$service:" pswlog.txt 2>/dev/null;
@@ -44,15 +51,20 @@ do
 	       echo "$service:$user:$password" >> pswlog.txt
 	       echo 'パスワードの追加は成功しました。'
 	       # 変数展開、コマンド置換や特殊文字を解釈させたい場合は、ダブルクォートを使用
-	       # 文字列を原文通りとして扱いたい場合は、シングルクォートを使用   
+	       # 文字列を原文通りとして扱いたい場合は、シングルクォートを使用
+
+	       # 暗号化
+	       e_file
+
        elif [ "$input" = '2' -o "$input" = '２' ];
        then
-	       echo '2:Get Passwordを選択しました。'
-	       
-	       d_file
-	       
+	       echo '2:Get Passwordを選択しました。'  
 	       read -p 'サービス名を入力し、enterキーを押してください:' service_2
-	       if grep -q "^$service_2:" pswlog.txt 2>/dev/null; # -qで、標準出力を抑制し、初回のエラーを非表示
+	       
+               # 復号
+               d_file
+
+	       if grep -q "^$service_2:" pswlog.txt 2>/dev/null; # -qで標準出力を抑制し、初回のエラーを非表示
 	       # if grep "^$service_2:" pswlog.txt > /dev/null; # > /dev/nullで、標準出力を抑制
 	       # if a=$(grep "^$service_2:" pswlog.txt); # a=()で、標準出力を抑制
 	         # 上記のif command文は、条件の判定ではなく、シェルコマンドの終了ステータスによる
@@ -76,6 +88,10 @@ do
 	       else
 		       echo 'そのサービスは登録されていません。'
 	       fi
+	       
+	       # 暗号化
+	       e_file
+
        elif [ "$input" = '3' -o "$input" = '３' ];
        then
 	       echo '3:Exitを選択しました。'
