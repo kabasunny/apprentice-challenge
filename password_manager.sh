@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# シグナルをトラップして、ファイルの削除処理を呼び出す
+trap "del_file" 1 2 6 15 # 
+
 # 暗号化と復号時のバッチ処理に必要なパスフレーズ
 pass='apprentice-challenge'
 
@@ -28,11 +31,22 @@ function e_file() {
 	rm 'pswlog.txt'
 }
 
+# 正常終了しない場合の平文ファイルの削除処理
+function del_file(){
+	if [ -f 'pswlog.txt' ];
+	then 
+		rm pswlog.txt
+	fi
+	echo -e "\n【シグナルによる終了】\n"
+	exit 1	
+}
+
 # メインの処理はここから
 echo 'パスワードマネージャへようこそ！'
 
 while true
 do
+
 	echo '次の選択肢の番号を入力し、enterキーを押してください。'
 	read -p ' 1 :Add Password  /  2 :Get Password  /  3 :Exit   :' input
 
@@ -106,17 +120,22 @@ do
        elif [ "$input" = 'admin' ];
        then
 	       echo '現在のリスト一覧 (管理者用の処理)'
+	       if [ ! -f  'pswlog.txt.gpg' ];
+	       then
+		       echo -e "現在、リストが存在しません。\n"
+		       exit 0
+	       fi
 	       d_file
 	       echo 'サービス名:ユーザー名:パスワード'
 	       cat pswlog.txt
 	       rm pswlog.txt
-	       break
+	       echo ''
+	       exit 0
        else
 	       echo '入力が間違えています。1 / 2 / 3 から選択してください。'
        fi
-       echo ""
-
+       echo ''
+      
 done
-
 echo -e "Thank you!\n";
 
