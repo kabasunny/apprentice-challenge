@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # シグナルをトラップして、ファイルの削除処理を呼び出す
-trap "c_file" 1 2 15
+trap "del_file" 1 2 6 15 # 
 
 # 暗号化と復号時のバッチ処理に必要なパスフレーズ
 pass='apprentice-challenge'
@@ -32,7 +32,7 @@ function e_file() {
 }
 
 # 正常終了しない場合の平文ファイルの削除処理
-function c_file(){
+function del_file(){
 	if [ -f 'pswlog.txt' ];
 	then 
 		rm pswlog.txt
